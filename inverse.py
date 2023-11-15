@@ -87,7 +87,7 @@ def plot_cuboid(center, size):
 
 
 def dist2(x1,y1,x2,y2):
-  return sqrt((x2-x1)**2+(y2-y1)**2);
+  return sqrt((x2-x1)**2+(y2-y1)**2)
 
 class Arm( object ):
 
@@ -116,10 +116,10 @@ class Arm( object ):
     
     toolZ = ze
     
-    return asarray([[toolX],[toolY],[toolZ]])
+    return np.asarray([[toolX],[toolY],[toolZ]])
   
   def angFromEnd(self,x,y,z):
-    ang = [90,90,90,90,90];
+    ang = [90,90,90,90,90]
     
     r = dist2(0,0,x,y)
     
@@ -133,7 +133,7 @@ class Arm( object ):
     print("beta = %f" % degrees(beta))
     alpha = atan2(z,x-self.l6)
     print("alpha = %f" % degrees(alpha))
-    theta2 = alpha + beta;
+    theta2 = alpha + beta
     print("theta2 = %f" % degrees(theta2))
 
     
@@ -146,7 +146,7 @@ class Arm( object ):
     print("zc = %f" % zc)
     
     theta4 = -atan2(zc-z,x-xc)
-    ang[3]=theta4;
+    ang[3]=theta4
     
 
     print("theta4 = %f" % degrees(theta4))
@@ -256,8 +256,11 @@ def goToPoint(a,ang,end,tip_points, store_points):
   while (go):
 
     tool = a.getTool(ang)
+
+    print(end)
+    print(tool)
     
-    diff = end-tool;
+    diff = end-tool
     print("goto")
     print("angle")
     print(ang)
@@ -299,7 +302,7 @@ def goToPoint(a,ang,end,tip_points, store_points):
       tz=-.25
     '''
     
-    tool2 = tool + asarray([[tx],[ty],[tz]])
+    tool2 = tool + np.asarray([[tx],[ty],[tz]])
     
     print("tool")
     print(tool)
@@ -332,7 +335,7 @@ def goToPoint(a,ang,end,tip_points, store_points):
     iteration(a,ang,tip_points,store_points)
     #sleep(.5)
     if (dist(tool,end)<1):
-      go = 0;
+      go = 0
     
     
   return a,ang
@@ -359,21 +362,26 @@ def iteration(a, ang, tip_points, store_points):
     tip_points[0].append(a.getTool(ang)[0])
     tip_points[1].append(a.getTool(ang)[1])
     tip_points[2].append(a.getTool(ang)[2])
+  
+  # Ensure tip_points are 2D arrays
+  # tip_points_array = [np.array(tp).reshape(-1, 1) for tp in tip_points]
 
   # Draw previous tool positions
-  ax.plot_wireframe(tip_points[0], tip_points[1], tip_points[2], color='r')
+  if (tip_points[0]):
+    ax.plot_wireframe(np.array(tip_points[0]), np.array(tip_points[1]), np.array(tip_points[2]), color='r')
   #draw()
   # Draw all buffered plots
   plt.draw()
   plt.pause(.001)
   #plt.iooff()
-  show()
+  plt.show()
     
 def main():
   global fig, ax,xend,yend,zend,x,y,z
   
-  fig = gcf()
-  ax = fig.gca(projection='3d')
+  fig = plt.gcf()
+  # ax = fig.gca(projection='3d')
+  ax = fig.add_subplot(111, projection='3d') # explicity specify a 3d object
   
   paper = PAPER  #4x4 rigid body transformation for paper position
   rotation = (paper[0:3,0:3])
@@ -399,14 +407,15 @@ def main():
 
   convertpage(0,0)
 
-  x = asarray([float(point1[0]),float(point2[0]),float(point3[0]),float(point4[0]),float(point1[0])])
-  y = asarray([float(point1[1]),float(point2[1]),float(point3[1]),float(point4[1]),float(point1[1])])
-  z = asarray([float(point1[2]),float(point2[2]),float(point3[2]),float(point4[2]),float(point1[2])])
+  x = np.asarray([float(point[0]) for point in [point1, point2, point3, point4, point1]])
+  y = np.asarray([float(point[1]) for point in [point1, point2, point3, point4, point1]])
+  z = np.asarray([float(point[2]) for point in [point1, point2, point3, point4, point1]])
+
   print("paper")
   print(x)
   print(y)
   print(z)
-  plt.show()
+  # plt.show()
   
   a = Arm()
   
@@ -433,46 +442,102 @@ def main():
     
 
     # Get user input
-    d = input("direction as list / angles as tuple?>")
-    if type(d) == list:
-      #a,ang = goToPoint(a,ang,d, tip_points, True)
-      #end = asarray([[xend],[yend],[zend]])
-      end = asarray([[d[0]],[d[1]],[d[2]]])
-      a,ang = goToPoint(a,ang,end,tip_points,store_points)
-      #Jt = a.getToolJac(ang)
-      #ang = ang + dot(pinv(Jt)[:,:len(d)],d)
-    elif type(d) == tuple:
-      ang = d
-      #iteration(a, ang, tip_points, store_points)
+    d = input("please enter direction as list / angles as tuple: ")
+
+    if d.lower() == "help":
+      print("""
+        This program provides a simulation of a 5-bar linkage robotic arm. You can enter the following commands:
+
+        - To move the arm to a specific direction, enter the direction as a list, e.g., [x, y, z].
+        - To set the joint angles, enter the angles as a tuple, e.g., (angle1, angle2, angle3).
+        - To reset the arm to its default position, enter 'reset'.
+        - To clear the stored points, enter 'clear' or 'reset'.
+        - To draw predefined strokes, enter 'draw'.
+
+        Example usage:
+        - Move to a specific direction: [10, 20, 30]
+        - Set joint angles: (0.5, 0.2, 0.8)
+        - Reset the arm: reset
+        - Clear stored points: clear
+        - Draw predefined strokes: draw
+        """)
+      return
+    elif d.lower() == "reset":
+      store_points = False
+      ang = [0,pi/4,pi/4]
+      iteration(a, ang, tip_points, store_points)
+    elif d.lower() == "clear":
+      del tip_points[:][:]
+      iteration(a, ang, tip_points, store_points)
+    elif d.lower() == "draw":
+      for pts in strokes:
+        print(pts)
+        a,ang = goToPoint(a,ang,convertpage(pts[0][0]/10.0, pts[0][1]/10.0),tip_points, store_points)
+        store_points = True
+        sleep(1)
         
-      #goToPoint(a,ang,asarray([[xend],[yend],[zend]]),tip_points,store_points)
+        a,ang = goToPoint(a,ang,convertpage(pts[1][0]/10.0, pts[1][1]/10.0),tip_points, store_points)
+        
+        sleep(1)
+      store_points = False
     else:
-      if (d == "reset"):
-        store_points = False
-        ang = [0,pi/4,pi/4]
-        iteration(a, ang, tip_points, store_points)
-      if (d == "clear" or "reset"):
-        del tip_points[:][:]
-        iteration(a, ang, tip_points, store_points)
-      if (d == "draw"):
-        for pts in strokes:
-          print(pts)
-          a,ang = goToPoint(a,ang,convertpage(pts[0][0]/10.0, pts[0][1]/10.0),tip_points, store_points)
-          store_points = True
-          sleep(1)
+      try:
+        d_type = eval(d)
+        if isinstance(d_type, list):
+          #a,ang = goToPoint(a,ang,d, tip_points, True)
+          #end = asarray([[xend],[yend],[zend]])
+          end = np.asarray([[d_type[0]],[d_type[1]],[d_type[2]]])
+          a,ang = goToPoint(a,ang,end,tip_points,store_points)
+          #Jt = a.getToolJac(ang)
+          #ang = ang + dot(pinv(Jt)[:,:len(d)],d)
+        elif isinstance(d_type, tuple):
+          ang = d
+        else: 
+          raise ValueError("Please enter a valid input. Enter 'help' for details")
+      except (NameError, SyntaxError):
+        raise ValueError("Please enter a valid input. Enter 'help' for details")
+
+    # elif type(d) == list:
+    #   #a,ang = goToPoint(a,ang,d, tip_points, True)
+    #   #end = asarray([[xend],[yend],[zend]])
+    #   end = np.asarray([[d[0]],[d[1]],[d[2]]])
+    #   print(end)
+    #   a,ang = goToPoint(a,ang,end,tip_points,store_points)
+    #   #Jt = a.getToolJac(ang)
+    #   #ang = ang + dot(pinv(Jt)[:,:len(d)],d)
+    # elif type(d) == tuple:
+    #   ang = d
+    #   #iteration(a, ang, tip_points, store_points)
+        
+    #   #goToPoint(a,ang,asarray([[xend],[yend],[zend]]),tip_points,store_points)
+    # elif (d == "reset"):
+    #     store_points = False
+    #     ang = [0,pi/4,pi/4]
+    #     iteration(a, ang, tip_points, store_points)
+    # elif (d == "clear" or d == "reset"):
+    #     del tip_points[:][:]
+    #     iteration(a, ang, tip_points, store_points)
+    # elif (d == "draw"):
+    #     for pts in strokes:
+    #       print(pts)
+    #       a,ang = goToPoint(a,ang,convertpage(pts[0][0]/10.0, pts[0][1]/10.0),tip_points, store_points)
+    #       store_points = True
+    #       sleep(1)
           
-          a,ang = goToPoint(a,ang,convertpage(pts[1][0]/10.0, pts[1][1]/10.0),tip_points, store_points)
+    #       a,ang = goToPoint(a,ang,convertpage(pts[1][0]/10.0, pts[1][1]/10.0),tip_points, store_points)
           
-          sleep(1)
-        store_points = False
+    #       sleep(1)
+    #     store_points = False
+    # else:
+    #   raise ValueError("Please enter a valid input. Enter 'help' for details")
   
   
 
   #a.plot3D(ang)
   #plt.draw()
   print(ang)
-  show()
+  plt.show()
   
-  
-  
-main()
+if __name__ == "__main__":
+    # This block gets executed when the script is run directly
+    main()
