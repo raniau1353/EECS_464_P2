@@ -10,7 +10,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.widgets import Slider
+from matplotlib.widgets import Slider, Button
 
 # The home coordinates will be [0,0,0]
 coord_home = [0,0,0]
@@ -36,8 +36,6 @@ point2g = [0,0,0]
 
 coord_end = [5, 5,-5]
 
-
-
 fig = plt.figure(figsize=(7,7))
 
 ax = fig.add_subplot(111, projection='3d')
@@ -50,6 +48,10 @@ vert1 = Slider(aySlider, 'vertplanemotor1', -180.0, 180.0, valinit=0, valstep = 
 #sliderZ = Slider(azSlider, 'Z', -180.0, 180.0, valinit=0, valstep = 1)
 
 
+# code for drawing
+button_ax = plt.axes([0.8, 0.8, 0.1, 0.05])
+draw_button = Button(button_ax, 'Draw')
+points = []
 
 def forwardKinematics(ang1, ang2):
     # point 1
@@ -236,8 +238,9 @@ def forwardKinematics(ang1, ang2):
 
 def HorizMotor(val = 0):
     global horizmotor
+    global points
     horizmotor = val
-    ax.clear()
+    # ax.clear()
 
     point1, point2, pointg, point2g = forwardKinematics(horizmotor,vertmotor1)
 
@@ -251,11 +254,18 @@ def HorizMotor(val = 0):
     ax.plot([-10,10],[0,0],[0,0], color='red')
     ax.plot([0,0],[-10,10],[0,0], color='blue')
     ax.plot([0,0],[0,0],[-10,10], color='green')
+
+    # if points:
+    points.append(point2g)
+    points_array = np.array(points).T
+    ax.scatter(points_array[0], points_array[1], points_array[2], c='black', marker='o')
+    # plot_points()
 
 def VertMotor1(val = 0):
     global vertmotor1
+    global points
     vertmotor1 = val
-    ax.clear()
+    # ax.clear()
 
     point1, point2, pointg, point2g = forwardKinematics(horizmotor,vertmotor1)
 
@@ -269,6 +279,12 @@ def VertMotor1(val = 0):
     ax.plot([-10,10],[0,0],[0,0], color='red')
     ax.plot([0,0],[-10,10],[0,0], color='blue')
     ax.plot([0,0],[0,0],[-10,10], color='green')
+
+    # if points:
+    points.append(point2g)
+    points_array = np.array(points).T
+    ax.scatter(points_array[0], points_array[1], points_array[2], c='black', marker='o')
+    # plot_points()
 '''
 def plotUpdateZ(val = 0):
     global joint3
@@ -288,7 +304,17 @@ def plotUpdateZ(val = 0):
     ax.plot([0,0],[0,0],[-10,10], color='green')
 '''
 
+# def draw(event):
+#     print('drawing')
+#     global points
+#     points.append(point2g)
+#     print(points)
+#     # ax.plot([point2g[0], coord_end[0]], [point2g[1], coord_end[1]], [point2g[2], coord_end[2]], color='black')
+#     # points.append(coord_end)
+
+
 horiz.on_changed(HorizMotor)
 vert1.on_changed(VertMotor1)
 #sliderZ.on_changed(plotUpdateZ)
+# draw_button.on_clicked(draw)
 plt.show()
