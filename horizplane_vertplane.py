@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.widgets import Slider, Button
+from itertools import product
 
 # The home coordinates will be [0,0,0]
 coord_home = [0,0,0]
@@ -45,6 +46,11 @@ ax.set_xlim([-10, 10])
 ax.set_ylim([-10, 10])
 ax.set_zlim([-10, 10])
 
+# Add axis labels
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
+
 axSlider = plt.axes([0.2, 0.1, 0.65, 0.03] )
 aySlider = plt.axes([0.2, 0.065, 0.65, 0.03] )
 azSlider = plt.axes([0.2, 0.03, 0.65, 0.03] )
@@ -63,6 +69,33 @@ draw_button = Button(button_ax, 'Draw')
 reset_draw_button = Button(plt.axes([0.6, 0.9, 0.2, 0.05]), 'Stop Drawing')
 points = []
 drawing = False
+
+# plot cubic workspace
+def plot_cubic_workspace():
+    # Coordinates of the cube vertices
+    cube_vertices = np.array(list(product([0, 33/10], repeat=3)))
+
+    # Translate the cube
+    translation_matrix = np.array([
+        [1, 0, 0, -10],  # Translation along the x-axis
+        [0, 1, 0, 0], # Translation along y-axis
+        [0, 0, 1, 0], # Translation along z-axis
+        [0, 0, 0, 1]
+    ])
+    cube_vertices = np.dot(cube_vertices, translation_matrix[:3, :3].T) + translation_matrix[:3, 3]
+
+    # Define the edges of the cube (ex: vertex 0 -> 1)
+    cube_edges = [
+        (0, 1), (1, 3), (3, 2), (2, 0),
+        (4, 5), (5, 7), (7, 6), (6, 4),
+        (0, 4), (1, 5), (2, 6), (3, 7)
+    ]
+
+    # Plot the cube edges
+    for edge in cube_edges:
+        edge_coords = np.array([cube_vertices[edge[0]], cube_vertices[edge[1]]])
+        ax.plot3D(edge_coords[:, 0], edge_coords[:, 1], edge_coords[:, 2], color='gray')
+
 
 def forwardKinematics(ang1, ang2):
     # point 1
@@ -341,7 +374,7 @@ def stop_draw(event):
     global drawing
     drawing = False
 
-
+plot_cubic_workspace()
 horiz.on_changed(HorizMotor)
 vert1.on_changed(VertMotor1)
 #sliderZ.on_changed(plotUpdateZ)
