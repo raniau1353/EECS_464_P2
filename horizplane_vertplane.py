@@ -278,7 +278,7 @@ def HorizMotor(val = 0):
     if drawing:
         points.append(point2g)
         points_array = np.array(points).T
-        ax.scatter(points_array[0], points_array[1], points_array[2], c='black', marker='o')
+        ax.scatter(points_array[0], points_array[1], points_array[2], c='black', marker='o', s=2)
 
 def VertMotor1(val = 0):
     global vertmotor1
@@ -312,7 +312,7 @@ def VertMotor1(val = 0):
     if drawing:
         points.append(point2g)
         points_array = np.array(points).T
-        ax.scatter(points_array[0], points_array[1], points_array[2], c='black', marker='o')
+        ax.scatter(points_array[0], points_array[1], points_array[2], c='black', marker='o', s=2)
     # plot_points()
 '''
 def plotUpdateZ(val = 0):
