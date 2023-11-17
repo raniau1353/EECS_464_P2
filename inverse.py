@@ -439,8 +439,6 @@ def main():
   zend = 35
 
   while 1:
-    
-
     # Get user input
     d = input("please enter direction as list / angles as tuple: ")
 
@@ -461,7 +459,6 @@ def main():
         - Clear stored points: clear
         - Draw predefined strokes: draw
         """)
-      return
     elif d.lower() == "reset":
       store_points = False
       ang = [0,pi/4,pi/4]
@@ -496,40 +493,6 @@ def main():
           raise ValueError("Please enter a valid input. Enter 'help' for details")
       except (NameError, SyntaxError):
         raise ValueError("Please enter a valid input. Enter 'help' for details")
-
-    # elif type(d) == list:
-    #   #a,ang = goToPoint(a,ang,d, tip_points, True)
-    #   #end = asarray([[xend],[yend],[zend]])
-    #   end = np.asarray([[d[0]],[d[1]],[d[2]]])
-    #   print(end)
-    #   a,ang = goToPoint(a,ang,end,tip_points,store_points)
-    #   #Jt = a.getToolJac(ang)
-    #   #ang = ang + dot(pinv(Jt)[:,:len(d)],d)
-    # elif type(d) == tuple:
-    #   ang = d
-    #   #iteration(a, ang, tip_points, store_points)
-        
-    #   #goToPoint(a,ang,asarray([[xend],[yend],[zend]]),tip_points,store_points)
-    # elif (d == "reset"):
-    #     store_points = False
-    #     ang = [0,pi/4,pi/4]
-    #     iteration(a, ang, tip_points, store_points)
-    # elif (d == "clear" or d == "reset"):
-    #     del tip_points[:][:]
-    #     iteration(a, ang, tip_points, store_points)
-    # elif (d == "draw"):
-    #     for pts in strokes:
-    #       print(pts)
-    #       a,ang = goToPoint(a,ang,convertpage(pts[0][0]/10.0, pts[0][1]/10.0),tip_points, store_points)
-    #       store_points = True
-    #       sleep(1)
-          
-    #       a,ang = goToPoint(a,ang,convertpage(pts[1][0]/10.0, pts[1][1]/10.0),tip_points, store_points)
-          
-    #       sleep(1)
-    #     store_points = False
-    # else:
-    #   raise ValueError("Please enter a valid input. Enter 'help' for details")
   
   
 
@@ -539,5 +502,4 @@ def main():
   plt.show()
   
 if __name__ == "__main__":
-    # This block gets executed when the script is run directly
     main()
