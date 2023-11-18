@@ -4,7 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import math
 from ntpath import join
 
-
+'''
 # normal to [1, 0, 0]
 X, Y = np.meshgrid(np.arange(-6, 6), np.arange(-6, 6))
 #Z = 0*X
@@ -64,7 +64,44 @@ ax = fig.add_subplot(111, projection='3d')
 #ax.plot_surface(Z, Y, X, alpha=0.5)  # the vertical plane
 ax.plot_surface(X, Z, Y, alpha=0.5)  # the vertical plane
 plt.show()
+'''
+# 21.59cm * 27.94cm
+#############################################
+# Define a plane equation: ax + by + cz + d = 0
+# For example, let's use the equation of the xy-plane: z = 0
+a, b, c, d = 0, 0, 1, 0
 
+# Create a grid of points in the xy-plane
+x = np.linspace(-10, 10, 100)
+y = np.linspace(-10, 10, 100)
+x, y = np.meshgrid(x, y)
+
+# Calculate the corresponding z values for each point on the grid
+plane1 = -0.5*x - 0.5*y
+plane2 = 0*x - y 
+plane3 = 0*x + y
+plane4 = -x + 0*y
+plane5 = 0* x + 0*y
+
+# Create a 3D plot
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
+# Plot the planes
+ax.plot_surface(x, y, plane1, alpha=0.5, rstride=100, cstride=100, color='r', label='Plane 1')
+ax.plot_surface(x, y, plane2, alpha=0.5, facecolors='g', rstride=100, cstride=100, label='Plane 2')
+ax.plot_surface(x, y, plane3, alpha=0.5, facecolors='b', rstride=100, cstride=100, label='Plane 3')
+ax.plot_surface(x, y, plane4, alpha=0.5, facecolors='m', rstride=100, cstride=100, label='Plane 4')
+ax.plot_surface(x, y, plane5, alpha=0.5, facecolors='c', rstride=100, cstride=100, label='Plane 5')
+ax.plot_surface(plane5, x, y, alpha=0.5, facecolors='c', rstride=100, cstride=100, label='Plane 6')
+ax.plot_surface(y, plane5, x, alpha=0.5, facecolors='c', rstride=100, cstride=100, label='Plane 7')
+# Set labels
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
+
+# Show the plot
+plt.show()
 
 # normal to [1, 1, 0]
 # todo 
