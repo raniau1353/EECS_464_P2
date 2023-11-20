@@ -66,6 +66,10 @@ ax = fig.add_subplot(111, projection='3d')
 points = []
 drawing = False
 
+X_TRANSLATION = -3.6
+Y_TRANSLATION = -1.65
+Z_TRANSLATION = 0
+
 # Create line objects for the arms
 line_arm1, = ax.plot([], [], [], color='blue', label='Arm 1')
 line_arm2, = ax.plot([], [], [], color='green', label='Arm 2')
@@ -77,12 +81,38 @@ line_arm6, = ax.plot([], [], [], color='brown', label='Arm 6')
 # Function to check if a point is inside the cube
 def is_point_inside_cube(point):
     # Cube boundaries
-    x_min, x_max = -3.6, 0
-    y_min, y_max = -1.65, 1.65
-    z_min, z_max = 0, 3.3
+    x_min, x_max = X_TRANSLATION, X_TRANSLATION + 3.3
+    y_min, y_max = Y_TRANSLATION, Y_TRANSLATION + 3.3
+    z_min, z_max = Z_TRANSLATION, Z_TRANSLATION + 3.3
 
     # Check if the point is inside the cube
     return (x_min <= point[0] <= x_max) and (y_min <= point[1] <= y_max) and (z_min <= point[2] <= z_max)
+
+# plot cubic workspace
+def plot_cubic_workspace():
+    # Coordinates of the cube vertices
+    cube_vertices = np.array(list(product([0, 33/10], repeat=3)))
+
+    # Translate the cube
+    translation_matrix = np.array([
+        [1, 0, 0, X_TRANSLATION],  # Translation along the x-axis
+        [0, 1, 0, Y_TRANSLATION], # Translation along y-axis
+        [0, 0, 1, Z_TRANSLATION], # Translation along z-axis
+        [0, 0, 0, 1]
+    ])
+    cube_vertices = np.dot(cube_vertices, translation_matrix[:3, :3].T) + translation_matrix[:3, 3]
+
+    # Define the edges of the cube (ex: vertex 0 -> 1)
+    cube_edges = [
+        (0, 1), (1, 3), (3, 2), (2, 0),
+        (4, 5), (5, 7), (7, 6), (6, 4),
+        (0, 4), (1, 5), (2, 6), (3, 7)
+    ]
+
+    # Plot the cube edges
+    for edge in cube_edges:
+        edge_coords = np.array([cube_vertices[edge[0]], cube_vertices[edge[1]]])
+        ax.plot3D(edge_coords[:, 0], edge_coords[:, 1], edge_coords[:, 2], color='gray')
 
 def forwardKinematics(ang1, ang2, ang3):
     
