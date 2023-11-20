@@ -30,6 +30,8 @@ horizmotor = 0
 theta1 = -60
 theta4 = -40
 
+#test
+
 '''
 #calculate theta3 (see diagram)
 A = 2*link3*link4*math.sin(math.radians(-theta4)) - 2*link1*link3*math.sin(math.radians(-theta1))
