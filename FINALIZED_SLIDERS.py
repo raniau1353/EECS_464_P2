@@ -10,11 +10,9 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.widgets import Slider
+from matplotlib.widgets import Slider, Button
 from scipy.optimize import fsolve
 import kinematics
-from linkage import FiveBar
-from kinematics import Kinematics
 
 # The home coordinates will be [0,0,0]
 coord_home = [0,0,0]
@@ -62,6 +60,17 @@ coord_end = [5, 5,-5]
 fig = plt.figure(figsize=(7,7))
 
 ax = fig.add_subplot(111, projection='3d')
+
+points = []
+drawing = False
+
+# Create line objects for the arms
+line_arm1, = ax.plot([], [], [], color='blue', label='Arm 1')
+line_arm2, = ax.plot([], [], [], color='green', label='Arm 2')
+line_arm3, = ax.plot([], [], [], color='red', label='Arm 3')
+line_arm4, = ax.plot([], [], [], color='orange', label='Arm 4')
+line_arm5, = ax.plot([], [], [], color='purple', label='Arm 5')
+line_arm6, = ax.plot([], [], [], color='brown', label='Arm 6')
 
 
 def forwardKinematics(ang1, ang2, ang3):
@@ -441,68 +450,158 @@ def forwardKinematics(ang1, ang2, ang3):
 def HorizMotor(val = 0):
     global horizmotor
     horizmotor = val
-    ax.clear()
+    # ax.clear()
 
     point1, point2, pointg, point2g, point3, point3_ext, point3g = forwardKinematics(horizmotor, theta1, theta4)
 
-    ax.plot([coord_home[0],point1[0]],[coord_home[1],point1[1]],[coord_home[2],point1[2]])
-    #ax.plot([coord_home[0],pointg[0]],[coord_home[1],pointg[1]],[coord_home[2],pointg[2]])
-    ax.plot([point1[0],point2[0]],[point1[1],point2[1]],[point1[2],point2[2]])
-    ax.plot([point1[0],pointg[0]],[point1[1],pointg[1]],[point1[2],pointg[2]])
-    ax.plot([pointg[0],point2g[0]],[pointg[1],point2g[1]],[pointg[2],point2g[2]])
-    ax.plot([point2[0],point3[0]],[point2[1],point3[1]],[point2[2],point3[2]])
-    ax.plot([point3[0],point3_ext[0]],[point3[1],point3_ext[1]],[point3[2],point3_ext[2]])
-    ax.plot([point2g[0],point3g[0]],[point2g[1],point3g[1]],[point2g[2],point3g[2]])
+    line_arm1.set_data([coord_home[0], point1[0]], [coord_home[1], point1[1]])
+    line_arm1.set_3d_properties([coord_home[2], point1[2]])
 
-    ax.plot([10,-10],[0,0],[0,0], color='red')
-    ax.plot([0,0],[10,-10],[0,0], color='blue')
-    ax.plot([0,0],[0,0],[10,-10], color='green')
+    line_arm2.set_data([point1[0], point2[0]], [point1[1], point2[1]])
+    line_arm2.set_3d_properties([point1[2], point2[2]])
+
+    line_arm3.set_data([point1[0], pointg[0], point2g[0]], [point1[1], pointg[1], point2g[1]])
+    line_arm3.set_3d_properties([point1[2], pointg[2], point2g[2]])
+
+    line_arm4.set_data([point2[0], point3[0]], [point2[1], point3[1]])
+    line_arm4.set_3d_properties([point2[2], point3[2]])
+
+    line_arm5.set_data([point3[0], point3_ext[0]], [point3[1], point3_ext[1]])
+    line_arm5.set_3d_properties([point3[2], point3_ext[2]])
+
+    line_arm6.set_data([point2g[0], point3g[0]], [point2g[1], point3g[1]])
+    line_arm6.set_3d_properties([point2g[2], point3g[2]])
+
+    # ax.plot([coord_home[0],point1[0]],[coord_home[1],point1[1]],[coord_home[2],point1[2]])
+    # ax.plot([point1[0],point2[0]],[point1[1],point2[1]],[point1[2],point2[2]])
+    # ax.plot([point1[0],pointg[0]],[point1[1],pointg[1]],[point1[2],pointg[2]])
+    # ax.plot([pointg[0],point2g[0]],[pointg[1],point2g[1]],[pointg[2],point2g[2]])
+    # ax.plot([point2[0],point3[0]],[point2[1],point3[1]],[point2[2],point3[2]])
+    # ax.plot([point3[0],point3_ext[0]],[point3[1],point3_ext[1]],[point3[2],point3_ext[2]])
+    # ax.plot([point2g[0],point3g[0]],[point2g[1],point3g[1]],[point2g[2],point3g[2]])
+
+    # ax.plot([10,-10],[0,0],[0,0], color='red')
+    # ax.plot([0,0],[10,-10],[0,0], color='blue')
+    # ax.plot([0,0],[0,0],[10,-10], color='green')
+
+    if drawing:
+        points.append(point3_ext)
+        points_array = np.array(points).T
+        ax.scatter(points_array[0], points_array[1], points_array[2], c='black', marker='o', s=2)
 
 def VertMotor1(val = 0):
     global theta1
     theta1 = val
-    ax.clear()
+    # ax.clear()
    
     point1, point2, pointg, point2g, point3, point3_ext, point3g = forwardKinematics(horizmotor, theta1, theta4)
 
-    ax.plot([coord_home[0],point1[0]],[coord_home[1],point1[1]],[coord_home[2],point1[2]])
-    #ax.plot([coord_home[0],pointg[0]],[coord_home[1],pointg[1]],[coord_home[2],pointg[2]])
-    ax.plot([point1[0],point2[0]],[point1[1],point2[1]],[point1[2],point2[2]])
-    ax.plot([point1[0],pointg[0]],[point1[1],pointg[1]],[point1[2],pointg[2]])
-    ax.plot([pointg[0],point2g[0]],[pointg[1],point2g[1]],[pointg[2],point2g[2]])
-    ax.plot([point2[0],point3[0]],[point2[1],point3[1]],[point2[2],point3[2]])
-    ax.plot([point3[0],point3_ext[0]],[point3[1],point3_ext[1]],[point3[2],point3_ext[2]])
-    ax.plot([point2g[0],point3g[0]],[point2g[1],point3g[1]],[point2g[2],point3g[2]])
+    line_arm1.set_data([coord_home[0], point1[0]], [coord_home[1], point1[1]])
+    line_arm1.set_3d_properties([coord_home[2], point1[2]])
 
-    ax.plot([10,-10],[0,0],[0,0], color='red')
-    ax.plot([0,0],[10,-10],[0,0], color='blue')
-    ax.plot([0,0],[0,0],[10,-10], color='green')
+    line_arm2.set_data([point1[0], point2[0]], [point1[1], point2[1]])
+    line_arm2.set_3d_properties([point1[2], point2[2]])
+
+    line_arm3.set_data([point1[0], pointg[0], point2g[0]], [point1[1], pointg[1], point2g[1]])
+    line_arm3.set_3d_properties([point1[2], pointg[2], point2g[2]])
+
+    line_arm4.set_data([point2[0], point3[0]], [point2[1], point3[1]])
+    line_arm4.set_3d_properties([point2[2], point3[2]])
+
+    line_arm5.set_data([point3[0], point3_ext[0]], [point3[1], point3_ext[1]])
+    line_arm5.set_3d_properties([point3[2], point3_ext[2]])
+
+    line_arm6.set_data([point2g[0], point3g[0]], [point2g[1], point3g[1]])
+    line_arm6.set_3d_properties([point2g[2], point3g[2]])
+
+    # ax.plot([coord_home[0],point1[0]],[coord_home[1],point1[1]],[coord_home[2],point1[2]])
+    # ax.plot([point1[0],point2[0]],[point1[1],point2[1]],[point1[2],point2[2]])
+    # ax.plot([point1[0],pointg[0]],[point1[1],pointg[1]],[point1[2],pointg[2]])
+    # ax.plot([pointg[0],point2g[0]],[pointg[1],point2g[1]],[pointg[2],point2g[2]])
+    # ax.plot([point2[0],point3[0]],[point2[1],point3[1]],[point2[2],point3[2]])
+    # ax.plot([point3[0],point3_ext[0]],[point3[1],point3_ext[1]],[point3[2],point3_ext[2]])
+    # ax.plot([point2g[0],point3g[0]],[point2g[1],point3g[1]],[point2g[2],point3g[2]])
+
+    # ax.plot([10,-10],[0,0],[0,0], color='red')
+    # ax.plot([0,0],[10,-10],[0,0], color='blue')
+    # ax.plot([0,0],[0,0],[10,-10], color='green')
+
+    if drawing:
+        points.append(point3_ext)
+        points_array = np.array(points).T
+        ax.scatter(points_array[0], points_array[1], points_array[2], c='black', marker='o', s=2)
     
 def VertMotor2(val = 0):
     global theta4
     theta4 = val
-    ax.clear()
+    # ax.clear()
     
     point1, point2, pointg, point2g, point3, point3_ext, point3g = forwardKinematics(horizmotor, theta1, theta4)
 
-    ax.plot([coord_home[0],point1[0]],[coord_home[1],point1[1]],[coord_home[2],point1[2]])
-    #ax.plot([coord_home[0],pointg[0]],[coord_home[1],pointg[1]],[coord_home[2],pointg[2]])
-    ax.plot([point1[0],point2[0]],[point1[1],point2[1]],[point1[2],point2[2]])
-    ax.plot([point1[0],pointg[0]],[point1[1],pointg[1]],[point1[2],pointg[2]])
-    ax.plot([pointg[0],point2g[0]],[pointg[1],point2g[1]],[pointg[2],point2g[2]])
-    ax.plot([point2[0],point3[0]],[point2[1],point3[1]],[point2[2],point3[2]])
-    ax.plot([point3[0],point3_ext[0]],[point3[1],point3_ext[1]],[point3[2],point3_ext[2]])
-    ax.plot([point2g[0],point3g[0]],[point2g[1],point3g[1]],[point2g[2],point3g[2]])
+    line_arm1.set_data([coord_home[0], point1[0]], [coord_home[1], point1[1]])
+    line_arm1.set_3d_properties([coord_home[2], point1[2]])
 
-    ax.plot([10,-10],[0,0],[0,0], color='red')
-    ax.plot([0,0],[10,-10],[0,0], color='blue')
-    ax.plot([0,0],[0,0],[10,-10], color='green')
+    line_arm2.set_data([point1[0], point2[0]], [point1[1], point2[1]])
+    line_arm2.set_3d_properties([point1[2], point2[2]])
+
+    line_arm3.set_data([point1[0], pointg[0], point2g[0]], [point1[1], pointg[1], point2g[1]])
+    line_arm3.set_3d_properties([point1[2], pointg[2], point2g[2]])
+
+    line_arm4.set_data([point2[0], point3[0]], [point2[1], point3[1]])
+    line_arm4.set_3d_properties([point2[2], point3[2]])
+
+    line_arm5.set_data([point3[0], point3_ext[0]], [point3[1], point3_ext[1]])
+    line_arm5.set_3d_properties([point3[2], point3_ext[2]])
+
+    line_arm6.set_data([point2g[0], point3g[0]], [point2g[1], point3g[1]])
+    line_arm6.set_3d_properties([point2g[2], point3g[2]])
+
+    # ax.plot([coord_home[0],point1[0]],[coord_home[1],point1[1]],[coord_home[2],point1[2]])
+    # ax.plot([point1[0],point2[0]],[point1[1],point2[1]],[point1[2],point2[2]])
+    # ax.plot([point1[0],pointg[0]],[point1[1],pointg[1]],[point1[2],pointg[2]])
+    # ax.plot([pointg[0],point2g[0]],[pointg[1],point2g[1]],[pointg[2],point2g[2]])
+    # ax.plot([point2[0],point3[0]],[point2[1],point3[1]],[point2[2],point3[2]])
+    # ax.plot([point3[0],point3_ext[0]],[point3[1],point3_ext[1]],[point3[2],point3_ext[2]])
+    # ax.plot([point2g[0],point3g[0]],[point2g[1],point3g[1]],[point2g[2],point3g[2]])
+
+    # ax.plot([10,-10],[0,0],[0,0], color='red')
+    # ax.plot([0,0],[10,-10],[0,0], color='blue')
+    # ax.plot([0,0],[0,0],[10,-10], color='green')
+
+    if drawing:
+        points.append(point3_ext)
+        points_array = np.array(points).T
+        ax.scatter(points_array[0], points_array[1], points_array[2], c='black', marker='o', s=2)
+
+def Draw(event):
+    global drawing
+    drawing = True
+
+def StopDraw(event):
+    global drawing
+    drawing = False
 
 def main():
 
     axSlider = plt.axes([0.2, 0.1, 0.65, 0.03] )
     aySlider = plt.axes([0.2, 0.065, 0.65, 0.03] )
     azSlider = plt.axes([0.2, 0.03, 0.65, 0.03] )
+
+    # Set initial plot dimensions
+    ax.set_xlim([-10, 10])
+    ax.set_ylim([-10, 10])
+    ax.set_zlim([-10, 10])
+
+    # Add axis labels
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+    # code for drawing
+    button_ax = plt.axes([0.3, 0.9, 0.1, 0.05])
+    draw_button = Button(button_ax, 'Draw')
+    reset_draw_button = Button(plt.axes([0.6, 0.9, 0.2, 0.05]), 'Stop Drawing')
+
     #ap1Slider = plt.axes([0.2, -0.01, 0.65, 0.03] )
     #ap2Slider = plt.axes([0.2, 0.15, 0.65, 0.03] )
     horiz = Slider(axSlider, 'horizplanemotor', -180.0, 180.0, valinit=0, valstep = 1)
@@ -516,6 +615,9 @@ def main():
     vert2.on_changed(VertMotor2)
     #vert_passive1.on_changed(VertPassive1)
     #vert_passive2.on_changed(VertPassive2)
+
+    draw_button.on_clicked(Draw)
+    reset_draw_button.on_clicked(StopDraw)
 
     plt.show()
 
