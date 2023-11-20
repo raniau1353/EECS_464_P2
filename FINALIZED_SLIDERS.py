@@ -72,6 +72,15 @@ line_arm4, = ax.plot([], [], [], color='orange', label='Arm 4')
 line_arm5, = ax.plot([], [], [], color='purple', label='Arm 5')
 line_arm6, = ax.plot([], [], [], color='brown', label='Arm 6')
 
+# Function to check if a point is inside the cube
+def is_point_inside_cube(point):
+    # Cube boundaries
+    x_min, x_max = -3.6, 0
+    y_min, y_max = -1.65, 1.65
+    z_min, z_max = 0, 3.3
+
+    # Check if the point is inside the cube
+    return (x_min <= point[0] <= x_max) and (y_min <= point[1] <= y_max) and (z_min <= point[2] <= z_max)
 
 def forwardKinematics(ang1, ang2, ang3):
     
@@ -484,7 +493,7 @@ def HorizMotor(val = 0):
     # ax.plot([0,0],[10,-10],[0,0], color='blue')
     # ax.plot([0,0],[0,0],[10,-10], color='green')
 
-    if drawing:
+    if drawing and is_point_inside_cube(point3_ext):
         points.append(point3_ext)
         points_array = np.array(points).T
         ax.scatter(points_array[0], points_array[1], points_array[2], c='black', marker='o', s=2)
@@ -526,7 +535,7 @@ def VertMotor1(val = 0):
     # ax.plot([0,0],[10,-10],[0,0], color='blue')
     # ax.plot([0,0],[0,0],[10,-10], color='green')
 
-    if drawing:
+    if drawing and is_point_inside_cube(point3_ext):
         points.append(point3_ext)
         points_array = np.array(points).T
         ax.scatter(points_array[0], points_array[1], points_array[2], c='black', marker='o', s=2)
@@ -568,7 +577,7 @@ def VertMotor2(val = 0):
     # ax.plot([0,0],[10,-10],[0,0], color='blue')
     # ax.plot([0,0],[0,0],[10,-10], color='green')
 
-    if drawing:
+    if drawing and is_point_inside_cube(point3_ext):
         points.append(point3_ext)
         points_array = np.array(points).T
         ax.scatter(points_array[0], points_array[1], points_array[2], c='black', marker='o', s=2)

@@ -297,12 +297,7 @@ def HorizMotor(val = 0):
     line_arm3.set_data([point1[0], pointg[0], point2g[0]], [point1[1], pointg[1], point2g[1]])
     line_arm3.set_3d_properties([point1[2], pointg[2], point2g[2]])
 
-    # ax.plot([coord_home[0],point1[0]],[coord_home[1],point1[1]],[coord_home[2],point1[2]])
-    # #ax.plot([coord_home[0],pointg[0]],[coord_home[1],pointg[1]],[coord_home[2],pointg[2]])
-    # ax.plot([point1[0],point2[0]],[point1[1],point2[1]],[point1[2],point2[2]])
-    # ax.plot([point1[0],pointg[0]],[point1[1],pointg[1]],[point1[2],pointg[2]])
     # ax.plot([pointg[0],point2g[0]],[pointg[1],point2g[1]],[pointg[2],point2g[2]])
-    # #ax.plot([point2[0],point3[0]],[point2[1],point3[1]],[point2[2],point3[2]])
 
     # ax.plot([-10,10],[0,0],[0,0], color='red')
     # ax.plot([0,0],[-10,10],[0,0], color='blue')
