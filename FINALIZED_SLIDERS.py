@@ -12,13 +12,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.widgets import Slider, Button
 from scipy.optimize import fsolve
-<<<<<<< Updated upstream
 from itertools import product
-=======
-#import kinematics
-#from linkage import FiveBar
-#from kinematics import Kinematics
->>>>>>> Stashed changes
 
 # The home coordinates will be [0,0,0]
 coord_home = [0,0,0]
@@ -470,14 +464,7 @@ def forwardKinematics(ang1, ang2, ang3):
 def HorizMotor(val = 0):
     global horizmotor
     horizmotor = val
-<<<<<<< Updated upstream
     # ax.clear()
-=======
-    ax.clear()
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
->>>>>>> Stashed changes
 
     point1, point2, pointg, point2g, point3, point3_ext, point3g = forwardKinematics(horizmotor, theta1, theta4)
 
@@ -519,16 +506,8 @@ def HorizMotor(val = 0):
 def VertMotor1(val = 0):
     global theta1
     theta1 = val
-<<<<<<< Updated upstream
     # ax.clear()
    
-=======
-    ax.clear()
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-
->>>>>>> Stashed changes
     point1, point2, pointg, point2g, point3, point3_ext, point3g = forwardKinematics(horizmotor, theta1, theta4)
 
     line_arm1.set_data([coord_home[0], point1[0]], [coord_home[1], point1[1]])
@@ -569,16 +548,8 @@ def VertMotor1(val = 0):
 def VertMotor2(val = 0):
     global theta4
     theta4 = val
-<<<<<<< Updated upstream
     # ax.clear()
     
-=======
-    ax.clear()
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-
->>>>>>> Stashed changes
     point1, point2, pointg, point2g, point3, point3_ext, point3g = forwardKinematics(horizmotor, theta1, theta4)
 
     line_arm1.set_data([coord_home[0], point1[0]], [coord_home[1], point1[1]])
@@ -686,14 +657,10 @@ def main():
     vert2.on_changed(VertMotor2)
     #vert_passive1.on_changed(VertPassive1)
     #vert_passive2.on_changed(VertPassive2)
-<<<<<<< Updated upstream
 
     draw_button.on_clicked(Draw)
     reset_draw_button.on_clicked(StopDraw)
 
-=======
-    
->>>>>>> Stashed changes
     plt.show()
 
 if __name__ == "__main__":
