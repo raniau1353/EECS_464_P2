@@ -12,7 +12,13 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.widgets import Slider, Button
 from scipy.optimize import fsolve
+<<<<<<< Updated upstream
 from itertools import product
+=======
+#import kinematics
+#from linkage import FiveBar
+#from kinematics import Kinematics
+>>>>>>> Stashed changes
 
 # The home coordinates will be [0,0,0]
 coord_home = [0,0,0]
@@ -116,23 +122,18 @@ def plot_cubic_workspace():
 
 def forwardKinematics(ang1, ang2, ang3):
     
-    #calculate theta3 (see diagram)
+    #calculate theta3 & vertpassive2 (see diagram)
     BD_x = link5 + link4 * np.cos(-theta4 * np.pi/180) - link1 * np.cos(-theta1* np.pi/180)
     BD_y = link4 * np.sin(-theta4 * np.pi/180) - link1 * np.sin(-theta1* np.pi/180)
     BD_len = np.sqrt(BD_x * BD_x + BD_y * BD_y)
     theta_BDF = np.arctan2(BD_x, BD_y)
     theta_BDC = np.arccos((link3*link3 + BD_len*BD_len - link2*link2)/(2*link3*BD_len))
     theta3 = 2*np.pi - np.pi/2 - theta_BDC - theta_BDF
-    #print("theta3 = ", math.degrees(theta3))
-    ang5 =  -math.degrees(theta3) - theta4
-    #print(vertpassive2)
+    ang5 =  -math.degrees(theta3) - theta4  # vertpassive2
 
     theta2 = math.asin((link3*math.sin(theta3) + link4*math.sin(math.radians(-theta4)) - link1*math.sin(math.radians(-theta1)))/ link2)
-    #print("theta2: ", theta2_deg)
-    ang4 = -(math.degrees(theta2) + theta1)
-    #print(vertpassive1)
+    ang4 = -(math.degrees(theta2) + theta1) # vertpassive1
     
-
     # point 1
     trans = np.dot(np.matrix([[1,0,0,0],
                         [0,1,0,0],
@@ -151,6 +152,13 @@ def forwardKinematics(ang1, ang2, ang3):
     point1[1] = rot[(1,0)]
     point1[2] = rot[(2,0)]
 
+    T_1 = np.matrix([[math.cos(math.radians(ang1)),-math.sin(math.radians(ang1)),0,0],
+                        [math.sin(math.radians(ang1)),math.cos(math.radians(ang1)),0,0],
+                        [0,0,1,0],
+                        [0,0,0,1]]) @ np.matrix([[1,0,0,0],
+                        [0,1,0,0],
+                        [0,0,1,len_lift],
+                        [0,0,0,1]])
 
     # point 2
     trans = np.dot(np.matrix([[1,0,0,link1],
@@ -186,6 +194,14 @@ def forwardKinematics(ang1, ang2, ang3):
     point2[0] = rot[(0,0)]
     point2[1] = rot[(1,0)]
     point2[2] = rot[(2,0)]
+
+    T_2 = np.matrix([[math.cos(math.radians(ang2)),0,math.sin(math.radians(ang2)),0],
+                        [0,1,0,0],
+                        [-math.sin(math.radians(ang2)),0,math.cos(math.radians(ang2)),0],
+                        [0,0,0,1]]) @ np.matrix([[1,0,0,link1],
+                        [0,1,0,0],
+                        [0,0,1,0],
+                        [0,0,0,1]])
 
     # point g
     trans = np.dot(np.matrix([[1,0,0,link5],
@@ -273,6 +289,14 @@ def forwardKinematics(ang1, ang2, ang3):
     point3[0] = rot[(0,0)]
     point3[1] = rot[(1,0)]
     point3[2] = rot[(2,0)]
+
+    T_3 = np.matrix([[math.cos(math.radians(ang4)),0,math.sin(math.radians(ang4)),0],
+                        [0,1,0,0],
+                        [-math.sin(math.radians(ang4)),0,math.cos(math.radians(ang4)),0],
+                        [0,0,0,1]]) @ np.matrix([[1,0,0,link2],
+                        [0,1,0,0],
+                        [0,0,1,0],
+                        [0,0,0,1]])
     
     trans = np.dot(np.matrix([[1,0,0,link1],
                         [0,1,0,0],
@@ -316,6 +340,11 @@ def forwardKinematics(ang1, ang2, ang3):
     point3_ext[0] = trans[(0,0)]
     point3_ext[1] = trans[(1,0)]
     point3_ext[2] = trans[(2,0)]
+
+    T_4 = np.matrix([[1, 0, 0, -link2_ext],
+                     [0, 1, 0, 0],
+                     [0, 0, 1, 0],
+                     [0, 0, 0, 1]])
 
     trans = np.dot(np.matrix([[1,0,0,link2],
                         [0,1,0,0],
@@ -429,60 +458,10 @@ def forwardKinematics(ang1, ang2, ang3):
     point3g[1] = rot[(1,0)]
     point3g[2] = rot[(2,0)]
 
-    '''
-    # point 3
-    trans = np.dot(np.matrix([[1,0,0,len_tibia],
-                        [0,1,0,0],
-                        [0,0,1,0],
-                        [0,0,0,1]]),np.matrix([coord_home[0],coord_home[1],coord_home[2],1]).transpose())
-    point3[0] = trans[(0,0)]
-    point3[1] = trans[(1,0)]
-    point3[2] = trans[(2,0)]
-
-    rot = np.dot(np.matrix([[math.cos(math.radians(ang3)),0,math.sin(math.radians(ang3)),0],
-                        [0,1,0,0],
-                        [-math.sin(math.radians(ang3)),0,math.cos(math.radians(ang3)),0],
-                        [0,0,0,1]]),np.matrix([point3[0],point3[1],point3[2],1]).transpose())
-    
-    point3[0] = rot[(0,0)]
-    point3[1] = rot[(1,0)]
-    point3[2] = rot[(2,0)]
-
-    trans = np.dot(np.matrix([[1,0,0,len_femur],
-                        [0,1,0,0],
-                        [0,0,1,0],
-                        [0,0,0,1]]),np.matrix([point3[0],point3[1],point3[2],1]).transpose())
-    point3[0] = trans[(0,0)]
-    point3[1] = trans[(1,0)]
-    point3[2] = trans[(2,0)]
-
-    rot = np.dot(np.matrix([[math.cos(math.radians(ang2)),0,math.sin(math.radians(ang2)),0],
-                        [0,1,0,0],
-                        [-math.sin(math.radians(ang2)),0,math.cos(math.radians(ang2)),0],
-                        [0,0,0,1]]),np.matrix([point3[0],point3[1],point3[2],1]).transpose())
-
-    point3[0] = rot[(0,0)]
-    point3[1] = rot[(1,0)]
-    point3[2] = rot[(2,0)] 
-    
-    trans = np.dot(np.matrix([[1,0,0,0],
-                        [0,1,0,0],
-                        [0,0,1,len_coxa],
-                        [0,0,0,1]]),np.matrix([point3[0],point3[1],point3[2],1]).transpose())
-    point3[0] = trans[(0,0)]
-    point3[1] = trans[(1,0)]
-    point3[2] = trans[(2,0)]
-
-    rot = np.dot(np.matrix([[math.cos(math.radians(ang1)),-math.sin(math.radians(ang1)),0,0],
-                        [math.sin(math.radians(ang1)),math.cos(math.radians(ang1)),0,0],
-                        [0,0,1,0],
-                        [0,0,0,1]]),np.matrix([point3[0],point3[1],point3[2],1]).transpose())
-    
-    point3[0] = rot[(0,0)]
-    point3[1] = rot[(1,0)]
-    point3[2] = rot[(2,0)]
-    '''
-
+    # calculate Transformation Matrix
+    T = T_1 @ T_2 @ T_3 @ T_4
+    print("Transformation Matrix\n ", T)
+    print(point3_ext)
     return point1, point2, pointg, point2g, point3, point3_ext, point3g
     
 
@@ -491,7 +470,14 @@ def forwardKinematics(ang1, ang2, ang3):
 def HorizMotor(val = 0):
     global horizmotor
     horizmotor = val
+<<<<<<< Updated upstream
     # ax.clear()
+=======
+    ax.clear()
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+>>>>>>> Stashed changes
 
     point1, point2, pointg, point2g, point3, point3_ext, point3g = forwardKinematics(horizmotor, theta1, theta4)
 
@@ -533,8 +519,16 @@ def HorizMotor(val = 0):
 def VertMotor1(val = 0):
     global theta1
     theta1 = val
+<<<<<<< Updated upstream
     # ax.clear()
    
+=======
+    ax.clear()
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+>>>>>>> Stashed changes
     point1, point2, pointg, point2g, point3, point3_ext, point3g = forwardKinematics(horizmotor, theta1, theta4)
 
     line_arm1.set_data([coord_home[0], point1[0]], [coord_home[1], point1[1]])
@@ -575,8 +569,16 @@ def VertMotor1(val = 0):
 def VertMotor2(val = 0):
     global theta4
     theta4 = val
+<<<<<<< Updated upstream
     # ax.clear()
     
+=======
+    ax.clear()
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+>>>>>>> Stashed changes
     point1, point2, pointg, point2g, point3, point3_ext, point3g = forwardKinematics(horizmotor, theta1, theta4)
 
     line_arm1.set_data([coord_home[0], point1[0]], [coord_home[1], point1[1]])
@@ -684,10 +686,14 @@ def main():
     vert2.on_changed(VertMotor2)
     #vert_passive1.on_changed(VertPassive1)
     #vert_passive2.on_changed(VertPassive2)
+<<<<<<< Updated upstream
 
     draw_button.on_clicked(Draw)
     reset_draw_button.on_clicked(StopDraw)
 
+=======
+    
+>>>>>>> Stashed changes
     plt.show()
 
 if __name__ == "__main__":
