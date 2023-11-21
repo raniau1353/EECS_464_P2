@@ -456,7 +456,7 @@ def forwardKinematics(ang1, ang2, ang3):
 
     T = T_1 @ T_2 @ T_3 @ T_4
     print("Transformation Matrix\n ", T)
-    print(point3_ext)
+    print("End Effector\n", point3_ext)
 
     
     linkage = FiveBar(link1, link2, link3, link4, link5, link2_ext - link2, 0)
