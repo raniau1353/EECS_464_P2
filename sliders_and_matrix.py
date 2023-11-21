@@ -12,43 +12,31 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.widgets import Slider, Button
 from scipy.optimize import fsolve
-<<<<<<< Updated upstream
 from itertools import product
-=======
-#import kinematics
-#from linkage import FiveBar
-#from kinematics import Kinematics
->>>>>>> Stashed changes
+from linkage import FiveBar
+from kinematics_old2 import Kinematics
+
 
 # The home coordinates will be [0,0,0]
 coord_home = [0,0,0]
 
-len_lift= 2
+len_lift= 2.5 ##changed from GITHUB
 link1 = 3
 link2 = 6
 link5 = 4
 link4 = 5
-link2_ext = 8
+link2_ext = 11
 link3 = 5
 
 #joint1 = 0
 horizmotor = 0
-theta1 = -60
-theta4 = -40
 
-#test
+linkage = FiveBar(link1, link2, link3, link4, link5, link2_ext - link2, 0)
+kinematics = Kinematics(linkage)
+m1_start , m2_start , m3_start = kinematics.inverse(5.35, 0 , -0.85)
 
-'''
-#calculate theta3 (see diagram)
-A = 2*link3*link4*math.sin(math.radians(-theta4)) - 2*link1*link3*math.sin(math.radians(-theta1))
-B = 2*link3*link5 - 2*link1*link3*math.cos(math.radians(-theta1)) + 2*link3*link4*math.cos(math.radians(-theta4))
-C = link1**2 - link2**2 + link3**2 + link4**2 + link5**2 - 2*link1*link4*(math.sin(math.radians(-theta1)))*(math.sin(math.radians(-theta4)))
-- 2*link1*link5*math.cos(math.radians(-theta1)) + 2*link4*link5*math.cos(math.radians(-theta4)) - 2*link1*link4*(math.cos(math.radians(-theta1)))*(math.cos(math.radians(-theta4)))
-
-theta3 = 2*math.atan((A + math.sqrt(A**2 + B**2 - C**2))/(B - C))
-theta3_deg = math.degrees(theta3)
-print("theta3 = ", theta3_deg)
-'''
+theta1 = -90 - math.degrees(m1_start)
+theta4 = -90 - math.degrees(m2_start)
 
 vertpassive1 = 0
 vertpassive2 = 0
@@ -72,7 +60,8 @@ ax = fig.add_subplot(111, projection='3d')
 points = []
 drawing = False
 
-X_TRANSLATION = -3.6
+#-3.5 , -1.65
+X_TRANSLATION = -7
 Y_TRANSLATION = -1.65
 Z_TRANSLATION = 0
 
@@ -122,18 +111,23 @@ def plot_cubic_workspace():
 
 def forwardKinematics(ang1, ang2, ang3):
     
-    #calculate theta3 & vertpassive2 (see diagram)
+    #calculate theta3 (see diagram)
     BD_x = link5 + link4 * np.cos(-theta4 * np.pi/180) - link1 * np.cos(-theta1* np.pi/180)
     BD_y = link4 * np.sin(-theta4 * np.pi/180) - link1 * np.sin(-theta1* np.pi/180)
     BD_len = np.sqrt(BD_x * BD_x + BD_y * BD_y)
     theta_BDF = np.arctan2(BD_x, BD_y)
     theta_BDC = np.arccos((link3*link3 + BD_len*BD_len - link2*link2)/(2*link3*BD_len))
     theta3 = 2*np.pi - np.pi/2 - theta_BDC - theta_BDF
-    ang5 =  -math.degrees(theta3) - theta4  # vertpassive2
+    #print("theta3 = ", math.degrees(theta3))
+    ang5 =  -math.degrees(theta3) - theta4
+    #print(vertpassive2)
 
     theta2 = math.asin((link3*math.sin(theta3) + link4*math.sin(math.radians(-theta4)) - link1*math.sin(math.radians(-theta1)))/ link2)
-    ang4 = -(math.degrees(theta2) + theta1) # vertpassive1
+    #print("theta2: ", theta2_deg)
+    ang4 = -(math.degrees(theta2) + theta1)
+    #print(vertpassive1)
     
+
     # point 1
     trans = np.dot(np.matrix([[1,0,0,0],
                         [0,1,0,0],
@@ -159,6 +153,7 @@ def forwardKinematics(ang1, ang2, ang3):
                         [0,1,0,0],
                         [0,0,1,len_lift],
                         [0,0,0,1]])
+     
 
     # point 2
     trans = np.dot(np.matrix([[1,0,0,link1],
@@ -340,11 +335,12 @@ def forwardKinematics(ang1, ang2, ang3):
     point3_ext[0] = trans[(0,0)]
     point3_ext[1] = trans[(1,0)]
     point3_ext[2] = trans[(2,0)]
-
+    
     T_4 = np.matrix([[1, 0, 0, -link2_ext],
                      [0, 1, 0, 0],
                      [0, 0, 1, 0],
                      [0, 0, 0, 1]])
+    
 
     trans = np.dot(np.matrix([[1,0,0,link2],
                         [0,1,0,0],
@@ -458,26 +454,24 @@ def forwardKinematics(ang1, ang2, ang3):
     point3g[1] = rot[(1,0)]
     point3g[2] = rot[(2,0)]
 
-    # calculate Transformation Matrix
     T = T_1 @ T_2 @ T_3 @ T_4
     print("Transformation Matrix\n ", T)
     print(point3_ext)
-    return point1, point2, pointg, point2g, point3, point3_ext, point3g
-    
 
+    
+    linkage = FiveBar(link1, link2, link3, link4, link5, link2_ext - link2, 0)
+    kinematics = Kinematics(linkage)
+    m1, m2, m3 = kinematics.inverse(-point3_ext[0], point3_ext[1], (point3_ext[2] - len_lift))
+
+    #ee_x, ee_y, ee_z, theta_2, theta_3 = kinematics.forward(ang2, ang3, ang1)
+    
+    return point1, point2, pointg, point2g, point3, point3_ext, point3g
 
 
 def HorizMotor(val = 0):
     global horizmotor
     horizmotor = val
-<<<<<<< Updated upstream
     # ax.clear()
-=======
-    ax.clear()
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
->>>>>>> Stashed changes
 
     point1, point2, pointg, point2g, point3, point3_ext, point3g = forwardKinematics(horizmotor, theta1, theta4)
 
@@ -519,16 +513,8 @@ def HorizMotor(val = 0):
 def VertMotor1(val = 0):
     global theta1
     theta1 = val
-<<<<<<< Updated upstream
     # ax.clear()
    
-=======
-    ax.clear()
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-
->>>>>>> Stashed changes
     point1, point2, pointg, point2g, point3, point3_ext, point3g = forwardKinematics(horizmotor, theta1, theta4)
 
     line_arm1.set_data([coord_home[0], point1[0]], [coord_home[1], point1[1]])
@@ -569,16 +555,8 @@ def VertMotor1(val = 0):
 def VertMotor2(val = 0):
     global theta4
     theta4 = val
-<<<<<<< Updated upstream
     # ax.clear()
     
-=======
-    ax.clear()
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-
->>>>>>> Stashed changes
     point1, point2, pointg, point2g, point3, point3_ext, point3g = forwardKinematics(horizmotor, theta1, theta4)
 
     line_arm1.set_data([coord_home[0], point1[0]], [coord_home[1], point1[1]])
@@ -624,32 +602,6 @@ def StopDraw(event):
     global drawing
     drawing = False
 
-# plot cubic workspace
-def plot_cubic_workspace():
-    # Coordinates of the cube vertices
-    cube_vertices = np.array(list(product([0, 33/10], repeat=3)))
-
-    # Translate the cube
-    translation_matrix = np.array([
-        [1, 0, 0, -3.6],  # Translation along the x-axis
-        [0, 1, 0, -1.65], # Translation along y-axis
-        [0, 0, 1, 0], # Translation along z-axis
-        [0, 0, 0, 1]
-    ])
-    cube_vertices = np.dot(cube_vertices, translation_matrix[:3, :3].T) + translation_matrix[:3, 3]
-
-    # Define the edges of the cube (ex: vertex 0 -> 1)
-    cube_edges = [
-        (0, 1), (1, 3), (3, 2), (2, 0),
-        (4, 5), (5, 7), (7, 6), (6, 4),
-        (0, 4), (1, 5), (2, 6), (3, 7)
-    ]
-
-    # Plot the cube edges
-    for edge in cube_edges:
-        edge_coords = np.array([cube_vertices[edge[0]], cube_vertices[edge[1]]])
-        ax.plot3D(edge_coords[:, 0], edge_coords[:, 1], edge_coords[:, 2], color='gray')
-
 def main():
 
     axSlider = plt.axes([0.2, 0.1, 0.65, 0.03] )
@@ -673,11 +625,16 @@ def main():
     draw_button = Button(button_ax, 'Draw')
     reset_draw_button = Button(plt.axes([0.6, 0.9, 0.2, 0.05]), 'Stop Drawing')
 
+
+    linkage = FiveBar(link1, link2, link3, link4, link5, link2_ext - link2, 0)
+    kinematics = Kinematics(linkage)
+    m1_start , m2_start , m3_start = kinematics.inverse(5.35, 0, -0.85)
     #ap1Slider = plt.axes([0.2, -0.01, 0.65, 0.03] )
     #ap2Slider = plt.axes([0.2, 0.15, 0.65, 0.03] )
-    horiz = Slider(axSlider, 'horizplanemotor', -180.0, 180.0, valinit=0, valstep = 1)
-    vert1 = Slider(aySlider, 'vertplanemotor1', -180.0, 180.0, valinit=0, valstep = 1)
-    vert2 = Slider(azSlider, 'vertplanemotor2', -180.0, 180.0, valinit=0, valstep = 1)
+
+    horiz = Slider(axSlider, 'horizplanemotor', -180.0, 180.0, valinit= -math.degrees(m3_start), valstep = 1)
+    vert1 = Slider(aySlider, 'vertplanemotor1', -180.0, 180.0, valinit= -90 - math.degrees(m1_start), valstep = 1)
+    vert2 = Slider(azSlider, 'vertplanemotor2', -180.0, 180.0, valinit= -90 - math.degrees(m2_start), valstep = 1)
     #vert_passive1 = Slider(ap1Slider, 'vertpassive1', -180.0, 180.0, valinit=0, valstep = 1)
     #vert_passive2 = Slider(ap2Slider, 'vertpassive2', -180.0, 180.0, valinit=0, valstep = 1)
 
@@ -686,15 +643,12 @@ def main():
     vert2.on_changed(VertMotor2)
     #vert_passive1.on_changed(VertPassive1)
     #vert_passive2.on_changed(VertPassive2)
-<<<<<<< Updated upstream
 
     draw_button.on_clicked(Draw)
     reset_draw_button.on_clicked(StopDraw)
 
-=======
-    
->>>>>>> Stashed changes
     plt.show()
 
 if __name__ == "__main__":
     main()
+
