@@ -52,7 +52,7 @@ ax = fig.add_subplot(111, projection='3d')
 points = []
 drawing = False
 
-X_TRANSLATION = -10
+X_TRANSLATION = -3.5
 Y_TRANSLATION = -1.65
 Z_TRANSLATION = 0
 
@@ -587,32 +587,6 @@ def Draw(event):
 def StopDraw(event):
     global drawing
     drawing = False
-
-# plot cubic workspace
-def plot_cubic_workspace():
-    # Coordinates of the cube vertices
-    cube_vertices = np.array(list(product([0, 33/10], repeat=3)))
-
-    # Translate the cube
-    translation_matrix = np.array([
-        [1, 0, 0, -3.6],  # Translation along the x-axis
-        [0, 1, 0, -1.65], # Translation along y-axis
-        [0, 0, 1, 0], # Translation along z-axis
-        [0, 0, 0, 1]
-    ])
-    cube_vertices = np.dot(cube_vertices, translation_matrix[:3, :3].T) + translation_matrix[:3, 3]
-
-    # Define the edges of the cube (ex: vertex 0 -> 1)
-    cube_edges = [
-        (0, 1), (1, 3), (3, 2), (2, 0),
-        (4, 5), (5, 7), (7, 6), (6, 4),
-        (0, 4), (1, 5), (2, 6), (3, 7)
-    ]
-
-    # Plot the cube edges
-    for edge in cube_edges:
-        edge_coords = np.array([cube_vertices[edge[0]], cube_vertices[edge[1]]])
-        ax.plot3D(edge_coords[:, 0], edge_coords[:, 1], edge_coords[:, 2], color='gray')
 
 def main():
 
