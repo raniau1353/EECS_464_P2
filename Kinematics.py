@@ -1,18 +1,16 @@
-import sys
 import csv
 import math
 from Linkage import FiveBar
+from Paper import Paper
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 class Kinematics:
     # w_x and w_y are front bottom left corner of workspace
-    def __init__(self, linkage, w_x, w_y,):
+    def __init__(self, linkage):
         self.linkage = linkage
-        self.paper_z = None
-        self.paper_x, self.paper_y = np.meshgrid(np.linspace(w_x, w_x+3.3, num=10), 
-                                                 np.linspace(w_y, w_y+3.3, num=10))
+        self.C = None
         
     # COORDINATE SYSTEM: 
     # origin <0, 0, 0> is j0
@@ -87,38 +85,32 @@ class Kinematics:
         A = np.c_[points[:, 0], points[:, 1], np.ones(len(points[:, 0]))]
         
         # plane coefficients Z = c0*X + c1*Y + c2
-        C,_,_,_ = np.linalg.lstsq(A, b, rcond=None)
-        self.paper_z = self.paper_x*C[0] + self.paper_y*C[1] + C[2]
+        self.C,_,_,_ = np.linalg.lstsq(A, b, rcond=None)
         
         return points
 
       # takes in start coordinate of square in paper frame and side length, draws a square
-    def draw(self, p_x, p_y, length):
+    def draw(self, p_x, p_y, scale):
         # MOVE TO START
-        ee_x, ee_y, ee_z = self.__paper_to_linkage(p_x, p_y)
+        ee_x, ee_y, ee_z = self.__paper_to_linkage(p_x-scale, p_y-scale)
         self.__move_linkage(ee_x, ee_y, ee_z)
         
         # DRAW BOTTOM LINE
-        ee_x, ee_y, ee_z = self.__paper_to_linkage(p_x+length, p_y)
+        ee_x, ee_y, ee_z = self.__paper_to_linkage(p_x+scale, p_y-scale)
         self.__move_linkage(ee_x, ee_y, ee_z)
         
         # DRAW RIGHT LINE
-        ee_x, ee_y, ee_z = self.__paper_to_linkage(p_x+length, p_y+length)
+        ee_x, ee_y, ee_z = self.__paper_to_linkage(p_x+scale, p_y+scale)
         self.__move_linkage(ee_x, ee_y, ee_z)
         
         # DRAW TOP LINE
-        ee_x, ee_y, ee_z = self.__paper_to_linkage(p_x, p_y+length)
+        ee_x, ee_y, ee_z = self.__paper_to_linkage(p_x-scale, p_y+scale)
         self.__move_linkage(ee_x, ee_y, ee_z)
         
         # DRAW LEFT LINE
-        ee_x, ee_y, ee_z = self.__paper_to_linkage(p_x, p_y)
+        ee_x, ee_y, ee_z = self.__paper_to_linkage(p_x-scale, p_y-scale)
         self.__move_linkage(ee_x, ee_y, ee_z)
-        
-    # convert point in paper reference frame to linkage reference frame
-    def __paper_to_linkage(self, p_x, p_y):
-        # TODO
-        assert(False)
-        
+                
     # move linkage to designated end effector coordinates
     def __move_linkage(self, ee_x, ee_y, ee_z):
         m1, m2, m3 = self.inverse(ee_x, ee_y, ee_z)
@@ -128,21 +120,28 @@ class Kinematics:
 ## DEBUG SCRIPT ##      
 if __name__ == "__main__":
     linkage = FiveBar(3, 6, 5, 5, 4, 5, 2.5)
-    model = Kinematics(linkage, 15, -1.65)
-    
-    #model.inverse(4.45, 0, 3.21-2.5)
-    
+    model = Kinematics(linkage)    
     
     raw = model.calibrate()
-  
+    
+    paper = Paper(4, -1.65, 0, [1, 0, 1])
+    
+    E = paper.M * np.array([1,1,0,1]).reshape((4,1))
+    
     # plot raw data
     plt.figure()
     ax = plt.subplot(111, projection='3d')
-    ax.scatter(raw[:,0], raw[:,1], color='b')    
+    ax.scatter(raw[:,0], raw[:,1], raw[:,2], color='b')    
     
     # plot plane
-    ax.plot_wireframe(model.paper_x,model.paper_y,model.paper_z, color='k')
+    paper_z = model.paper_x*model.C[0] + model.paper_y*model.C[1] + model.C[2]
+    ax.plot_wireframe(model.paper_x,model.paper_y,paper_z, color='k')
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.set_zlabel('z')
+    
+    # plot transformed points
+    ax.scatter(E[0], E[1], E[2], color='r')
+    
+    
     plt.show()
