@@ -3,8 +3,8 @@ import math
 from Linkage import FiveBar
 from Paper import Paper
 import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+#import matplotlib.pyplot as plt
+#from mpl_toolkits.mplot3d import Axes3D
 
 class Kinematics:
     # w_x and w_y are front bottom left corner of workspace
@@ -63,41 +63,44 @@ class Kinematics:
     #########################
     ### CONTROL FUNCTIONS ###
     #########################
-    
-    def cal2(self):
+      
+    def quick_cal(self):
         # read in list of calibration points
         points_list = []
-        with open('calibration_data.csv') as cal_file:
+        with open('quick_calibration_data.csv') as cal_file:
             cal_angles = csv.reader(cal_file, delimiter=' ')
             for row in cal_angles:
+                
                 # angles read from file
                 m1, m2, m3 = row
                 
                 # convert motor angles to ee point
-                x, y, z = self.forward(math.radians(float(m1)), 
-                                       math.radians(float(m2)), 
-                                       math.radians(float(m3)))
+                x, y, z = self.forward(math.radians(float(m1)/100), 
+                                       math.radians(float(m2)/100), 
+                                       math.radians(float(m3)/100))
                 points_list.append([x, y, z])
+        
         points = np.array(points_list)
 
         x = points[1, :] - points[0, :]
+        x = x/np.linalg.norm(x)
         y = points[2, :] - points[0, :]
+        y = y/np.linalg.norm(y)
         z = np.cross(x, y)
+        z = z/np.linalg.norm(z)
         
-        r_m = np.array([[x], [y], [z]])
-        t_m = np.array(points[0, :])
+        r_m = np.array([x, y, z])
+        t_m = np.transpose(np.array([points[0, :]])) 
         M = np.append(r_m, t_m, axis=1)
-        M = np.append(M, [0, 0, 0, 1], axis=0)
-        print("KINEMAICS: M")
+        M = np.append(M, np.array([[0, 0, 0, 1]]), axis=0)
+        print("QUICK: M")
         print(M)
-        return M
-        
-        
+        return M        
     
     def calibrate(self):
         # read in list of calibration points
         points_list = []
-        with open('calibration_data.csv') as cal_file:
+        with open('quick_calibration_data.csv') as cal_file:
             cal_angles = csv.reader(cal_file, delimiter=' ')
             for row in cal_angles:
                 # angles read from file
@@ -117,61 +120,37 @@ class Kinematics:
         # plane coefficients Z = c0*X + c1*Y + c2
         self.C,_,_,_ = np.linalg.lstsq(A, b, rcond=None)
         
-        return points
+        return points        
+        
 
-      # takes in start coordinate of square in paper frame and side length, draws a square
-    def draw(self, p_x, p_y, scale):
-        # MOVE TO START
-        ee_x, ee_y, ee_z = self.__paper_to_linkage(p_x-scale, p_y-scale)
-        self.__move_linkage(ee_x, ee_y, ee_z)
-        
-        # DRAW BOTTOM LINE
-        ee_x, ee_y, ee_z = self.__paper_to_linkage(p_x+scale, p_y-scale)
-        self.__move_linkage(ee_x, ee_y, ee_z)
-        
-        # DRAW RIGHT LINE
-        ee_x, ee_y, ee_z = self.__paper_to_linkage(p_x+scale, p_y+scale)
-        self.__move_linkage(ee_x, ee_y, ee_z)
-        
-        # DRAW TOP LINE
-        ee_x, ee_y, ee_z = self.__paper_to_linkage(p_x-scale, p_y+scale)
-        self.__move_linkage(ee_x, ee_y, ee_z)
-        
-        # DRAW LEFT LINE
-        ee_x, ee_y, ee_z = self.__paper_to_linkage(p_x-scale, p_y-scale)
-        self.__move_linkage(ee_x, ee_y, ee_z)
-                
-    # move linkage to designated end effector coordinates
-    def __move_linkage(self, ee_x, ee_y, ee_z):
-        m1, m2, m3 = self.inverse(ee_x, ee_y, ee_z)
-        # TODO
-        
-        
+'''
 ## DEBUG SCRIPT ##      
 if __name__ == "__main__":
     linkage = FiveBar(3, 6, 5, 5, 4, 5, 2.5)
     model = Kinematics(linkage)    
     
     raw = model.calibrate()
-    M = model.cal2()
     
-    paper = Paper(4, -1.65, 0, [1, 0, 1])
+    M = model.quick_cal()
+    
+    
+    # paper corner: 
+    p_x = 4
+    p_y = -1.65
+    
+    paper = Paper(p_x, p_y, 0, [1, 0, 1])
     
     v = np.array([1,1,0,1]).reshape((4,1))
-    
-    E1 = np.matmul(paper.M, v)
-    
-    E2 = np.matmul(M, v)
-    E2[2] = E2[0]*model.C[0] + E2[1]*model.C[1] + model.C[2]
-    
+    E = np.matmul(paper.M, v)
+    E_quick = np.matmul(M, v)
+        
     # plot raw data
     plt.figure()
     ax = plt.subplot(111, projection='3d')
     ax.scatter(raw[:,0], raw[:,1], raw[:,2], color='b')    
-    
 
     # plot plane
-    paper_x, paper_y = np.meshgrid(np.linspace(4, 7.3, num=10), np.linspace(-1.65, 1.65, num=10))
+    paper_x, paper_y = np.meshgrid(np.linspace(p_x, p_x+3.3, num=10), np.linspace(p_y, p_y+3.3, num=10))
     
     paper_z = paper_x*model.C[0] + paper_y*model.C[1] + model.C[2]
     ax.plot_wireframe(paper_x,paper_y,paper_z, color='k')
@@ -180,8 +159,10 @@ if __name__ == "__main__":
     ax.set_zlabel('z')
     
     # plot transformed points
-    ax.scatter(E1[0], E1[1], E1[2], color='r')
-    ax.scatter(E2[0], E2[1], E2[2], color='g')
-    
+    ax.scatter(E[0], E[1], E[2], color='r')
+    E[2] = E[0]*model.C[0] + E[1]*model.C[1] + model.C[2]
+    ax.scatter(E[0], E[1], E[2], color='g')
+    ax.scatter(E_quick[0], E_quick[1], E_quick[2], color='y')
     
     plt.show()
+'''
