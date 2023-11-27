@@ -43,7 +43,7 @@ class Kinematics:
         # Linkage motors 
         m1, m2 = self.linkage.get_motor_angles(END_EFFECTOR_X/math.cos(m3), END_EFFECTOR_Z)
         
-        print(f"m1: {math.degrees(m1)}\nm2: {math.degrees(m2)}\nm3: {math.degrees(m3)}")
+        #print(f"m1: {math.degrees(m1)}\nm2: {math.degrees(m2)}\nm3: {math.degrees(m3)}")
         
         return m1, m2, m3
     
@@ -56,13 +56,43 @@ class Kinematics:
         ee_x = math.cos(MOTOR_ANGLE_3)*r
         ee_y = math.sin(MOTOR_ANGLE_3)*r
         
-        print(f"ee_x: {ee_x}\nee_y: {ee_y}\nee_z: {ee_z}")
+        #print(f"ee_x: {ee_x}\nee_y: {ee_y}\nee_z: {ee_z}")
         
         return ee_x, ee_y, ee_z
     
     #########################
     ### CONTROL FUNCTIONS ###
     #########################
+    
+    def cal2(self):
+        # read in list of calibration points
+        points_list = []
+        with open('calibration_data.csv') as cal_file:
+            cal_angles = csv.reader(cal_file, delimiter=' ')
+            for row in cal_angles:
+                # angles read from file
+                m1, m2, m3 = row
+                
+                # convert motor angles to ee point
+                x, y, z = self.forward(math.radians(float(m1)), 
+                                       math.radians(float(m2)), 
+                                       math.radians(float(m3)))
+                points_list.append([x, y, z])
+        points = np.array(points_list)
+
+        x = points[1, :] - points[0, :]
+        y = points[2, :] - points[0, :]
+        z = np.cross(x, y)
+        
+        r_m = np.array([[x], [y], [z]])
+        t_m = np.array(points[0, :])
+        M = np.append(r_m, t_m, axis=1)
+        M = np.append(M, [0, 0, 0, 1], axis=0)
+        print("KINEMAICS: M")
+        print(M)
+        return M
+        
+        
     
     def calibrate(self):
         # read in list of calibration points
@@ -123,25 +153,35 @@ if __name__ == "__main__":
     model = Kinematics(linkage)    
     
     raw = model.calibrate()
+    M = model.cal2()
     
     paper = Paper(4, -1.65, 0, [1, 0, 1])
     
-    E = paper.M * np.array([1,1,0,1]).reshape((4,1))
+    v = np.array([1,1,0,1]).reshape((4,1))
+    
+    E1 = np.matmul(paper.M, v)
+    
+    E2 = np.matmul(M, v)
+    E2[2] = E2[0]*model.C[0] + E2[1]*model.C[1] + model.C[2]
     
     # plot raw data
     plt.figure()
     ax = plt.subplot(111, projection='3d')
     ax.scatter(raw[:,0], raw[:,1], raw[:,2], color='b')    
     
+
     # plot plane
-    paper_z = model.paper_x*model.C[0] + model.paper_y*model.C[1] + model.C[2]
-    ax.plot_wireframe(model.paper_x,model.paper_y,paper_z, color='k')
+    paper_x, paper_y = np.meshgrid(np.linspace(4, 7.3, num=10), np.linspace(-1.65, 1.65, num=10))
+    
+    paper_z = paper_x*model.C[0] + paper_y*model.C[1] + model.C[2]
+    ax.plot_wireframe(paper_x,paper_y,paper_z, color='k')
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.set_zlabel('z')
     
     # plot transformed points
-    ax.scatter(E[0], E[1], E[2], color='r')
+    ax.scatter(E1[0], E1[1], E1[2], color='r')
+    ax.scatter(E2[0], E2[1], E2[2], color='g')
     
     
     plt.show()
