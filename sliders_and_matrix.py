@@ -20,13 +20,13 @@ from kinematics_old2 import Kinematics
 # The home coordinates will be [0,0,0]
 coord_home = [0,0,0]
 
-len_lift= 2.5 ##changed from GITHUB
-link1 = 3
-link2 = 6
-link5 = 4
-link4 = 5
-link2_ext = 11
-link3 = 5
+len_lift= 2.85 ##changed from GITHUB
+link1 = 3.0
+link2 = 6.0
+link5 = 4.0
+link4 = 5.0
+link2_ext = 11.05
+link3 = 5.0
 
 #joint1 = 0
 horizmotor = 0
