@@ -3,8 +3,8 @@ import math
 from Linkage import FiveBar
 from Paper import Paper
 import numpy as np
-#import matplotlib.pyplot as plt
-#from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 class Kinematics:
     # w_x and w_y are front bottom left corner of workspace
@@ -68,11 +68,16 @@ class Kinematics:
         # read in list of calibration points
         points_list = []
         with open('quick_calibration_data.csv') as cal_file:
-            cal_angles = csv.reader(cal_file, delimiter=' ')
+            cal_angles = csv.reader(cal_file)
+            next(cal_angles)
             for row in cal_angles:
                 
                 # angles read from file
-                m1, m2, m3 = row
+                #print(m1)
+                m1 = row[1]
+                m2 = row[2]
+                m3 = row[3]
+                # _, m1, m2, m3 = row
                 
                 # convert motor angles to ee point
                 x, y, z = self.forward(math.radians(float(m1)/100), 
@@ -101,10 +106,13 @@ class Kinematics:
         # read in list of calibration points
         points_list = []
         with open('quick_calibration_data.csv') as cal_file:
-            cal_angles = csv.reader(cal_file, delimiter=' ')
+            cal_angles = csv.reader(cal_file)
+            next(cal_angles)
             for row in cal_angles:
                 # angles read from file
-                m1, m2, m3 = row
+                m1 = row[1]
+                m2 = row[2]
+                m3 = row[3]
                 
                 # convert motor angles to ee point
                 x, y, z = self.forward(math.radians(float(m1)), 
@@ -123,10 +131,10 @@ class Kinematics:
         return points        
         
 
-'''
+
 ## DEBUG SCRIPT ##      
 if __name__ == "__main__":
-    linkage = FiveBar(3, 6, 5, 5, 4, 5, 2.5)
+    linkage = FiveBar(30, 60, 50, 50, 40, 55, 28.5)
     model = Kinematics(linkage)    
     
     raw = model.calibrate()
@@ -135,12 +143,13 @@ if __name__ == "__main__":
     
     
     # paper corner: 
-    p_x = 4
-    p_y = -1.65
+    p_x = raw[0,0]
+    p_y = raw[0,1]
+    p_z = raw[0,2]
     
-    paper = Paper(p_x, p_y, 0, [1, 0, 1])
+    paper = Paper(p_x, p_y, p_z, [1, 0, 1])
     
-    v = np.array([1,1,0,1]).reshape((4,1))
+    v = np.transpose(np.array([7.5,17.5,0,1]))
     E = np.matmul(paper.M, v)
     E_quick = np.matmul(M, v)
         
@@ -150,7 +159,7 @@ if __name__ == "__main__":
     ax.scatter(raw[:,0], raw[:,1], raw[:,2], color='b')    
 
     # plot plane
-    paper_x, paper_y = np.meshgrid(np.linspace(p_x, p_x+3.3, num=10), np.linspace(p_y, p_y+3.3, num=10))
+    paper_x, paper_y = np.meshgrid(np.linspace(p_x, p_x+33, num=10), np.linspace(p_y, p_y+33, num=10))
     
     paper_z = paper_x*model.C[0] + paper_y*model.C[1] + model.C[2]
     ax.plot_wireframe(paper_x,paper_y,paper_z, color='k')
@@ -165,4 +174,3 @@ if __name__ == "__main__":
     ax.scatter(E_quick[0], E_quick[1], E_quick[2], color='y')
     
     plt.show()
-'''
