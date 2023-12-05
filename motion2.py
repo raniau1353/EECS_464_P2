@@ -18,7 +18,27 @@ import ckbot.logical as L
 # global variable to specify how many steps to take between each point in the square
 STEPS = 10
 
+def find_transformation_matrix(src_points, dst_points):
+    """
+    寻找从源平面到目标平面的变换矩阵
+    :param src_points: 源平面上的三个点的坐标，每行一个点
+    :param dst_points: 目标平面上对应的三个点的坐标，每行一个点
+    :return: 4x4的变换矩阵
+    """
+    # 构造增广矩阵，每个点的坐标扩展为齐次坐标（增加一维，设为1）
+    src_points = np.column_stack((src_points, np.ones(src_points.shape[0])))
+    dst_points = np.column_stack((dst_points, np.ones(dst_points.shape[0])))
+
+    # 利用最小二乘法求解变换矩阵
+    transformation_matrix, residuals, _, _ = np.linalg.lstsq(src_points, dst_points, rcond=None)
+
+    # 将变换矩阵转为3x3形式
+    transformation_matrix = np.vstack([transformation_matrix[:3, :], [0, 0, 0, 1]])
+
+    return transformation_matrix
+
 def test_kinematics(m1, m2, m3):
+
     #                 l1  l2  l3  l4  lg  le  lift
     linkage = FiveBar(30, 60, 50, 50, 40, 51.5, 28.5) # cm
     model = Kinematics(linkage)
@@ -28,6 +48,23 @@ def test_kinematics(m1, m2, m3):
     # m1: Nx2F
     # m2: Nx2D_
     # m3: Nx2E
+
+    input_arr = np.array([m1, m2, m3, 1])
+    transformation_matrix = np.array([
+        [ 7.04545455e-01, -4.54545455e-02, -4.54545455e-01, -2.08166817e-17],
+ [-9.00900901e-02, 1.36036036e+00, 3.00300300e-02, -4.33680869e-18],
+ [ 0.0, 0.0, 0.0, 0.0],
+ [ 0.0, 0.0, 0.0, 1.0],
+    ])
+    inv_transformation_matrix = np.linalg.inv(transformation_matrix)
+    print(inv_transformation_matrix)
+
+    if np.linalg.det(transformation_matrix) != 0:
+        print('invertable')
+        inv_transformation_matrix = np.linalg.inv(transformation_matrix)
+
+        result_arr = np.dot(inv_transformation_matrix, input_arr)
+        print(result_arr)
 
     m1, m2, m3 = model.inverse(float(m1), float(m2), float(m3))
     # print("INVERSE")
