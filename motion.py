@@ -16,7 +16,7 @@ from joy.misc import loadCSV
 import ckbot.logical as L
 
 # global variable to specify how many steps to take between each point in the square
-STEPS = 30
+STEPS = 10
 
 def test_kinematics(m1, m2, m3):
     #                 l1  l2  l3  l4  lg  le  lift
@@ -111,7 +111,7 @@ def run(filename):
                     c.at.Nx2F.set_pos(float(m1_ls[i]))
                     c.at.Nx2D.set_pos(float(m2_ls[i]))
                     c.at.Nx2E.set_pos(float(m3_ls[i]))
-                    sleep(0.5)
+                    sleep(0.1)
                 
                 m1_i, m2_i, m3_i = m1_curr, m2_curr, m3_curr
 
@@ -174,9 +174,9 @@ def main():
             x = float(sys.argv[1])
             y = float(sys.argv[2])
             z = float(sys.argv[3])
-            if (y > 20 or y < -20):
+            if (y > 25 or y < -25):
                 print('Invalid y-range. Y-range is from [-20, 20]')
-            elif (x < 30 or x > 70):
+            elif (x < 30 or x > 80):
                 print('Invalid x-range. X-range is from [30, 70]')
             elif (z < -25 or z > 35):
                 print('Invalid z-range. Z-range is from [-20, 35]')
